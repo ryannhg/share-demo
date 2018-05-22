@@ -1,0 +1,44 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Share Demo</title>
+</head>
+<body>
+  <div id="app">
+    <h1>Share Demo</h1>
+    <p v-if="shareNotSupported">
+      Sharing is not supported in this browser...
+    </p>
+    <div v-else>
+      <button v-on:click="share()">Share this page</button>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js"></script>
+  <script>
+    new Vue({
+      el: '#app',
+      computed: {
+        shareSupported: function () {
+          return (window.navigator && window.navigator.share)
+        },
+        shareNotSupported: function () {
+          return !this.shareSupported
+        }
+      },
+      methods: {
+        share: function () {
+          if (this.shareSupported) {
+            window.navigator.share({
+              title: document.title,
+              text: 'Example of sharing!',
+              url: window.location.href
+            })
+          }
+        }
+      }
+    })
+  </script>
+</body>
+</html>
