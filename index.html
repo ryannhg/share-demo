@@ -8,23 +8,45 @@
 <body>
   <div id="app">
     <h1>Share Demo</h1>
-    <p v-if="shareNotSupported">
-      Sharing is not supported in this browser...
+    <p>
+      <span v-if="shareSupported">Click the button to share the link!</span>
+      <span v-else>Sharing is not supported in this browser...</span>
     </p>
-    <div v-else>
-      <button v-on:click="share()">Share this page</button>
+    <div>
+      <button v-if="shareSupported"v-on:click="share()">Share this page</button>
+      <div v-else>
+        <button v-on:click="copy()">Copy link instead</button>
+        <input ref="urlInput" type="hidden" id="testing-code" v-bind:value="url">
+        <p v-if="copySuccessful" style="color: #080;">Link copied to clipboard!</p>
+        <p v-if="copyFailed">Copy failed...</p>
+      </div>
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js"></script>
   <script>
     new Vue({
       el: '#app',
+      data: {
+        copyInfo: {
+          attempted: false,
+          error: false
+        }
+      },
       computed: {
+        url: function () {
+          return window.location.href
+        },
         shareSupported: function () {
           return (window.navigator && window.navigator.share)
         },
         shareNotSupported: function () {
           return !this.shareSupported
+        },
+        copySuccessful: function () {
+          return this.copyInfo.attempted && this.copyInfo.error === false
+        },
+        copyFailed: function () {
+          return this.copyInfo.attempted && this.copyInfo.error === true
         }
       },
       methods: {
@@ -33,9 +55,25 @@
             window.navigator.share({
               title: document.title,
               text: 'Example of sharing!',
-              url: window.location.href
+              url: this.url
             })
           }
+        },
+        copy: function () {
+          var input = this.$refs.urlInput
+          input.setAttribute('type', 'text')
+          input.select()
+          
+          var successful = false
+          this.copyInfo.attempted = true
+
+          try {
+            successful = document.execCommand('copy')
+          } catch (ignore) {}
+
+          this.copyInfo.error = !successful
+          input.setAttribute('type', 'hidden')
+          window.getSelection().removeAllRanges()
         }
       }
     })
